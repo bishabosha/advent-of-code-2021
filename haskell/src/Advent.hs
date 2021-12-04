@@ -1,13 +1,20 @@
-module Advent (inputChallenge, readLinesAsInt, runChallenge) where
+module Advent (inputChallenge, readLinesAsInt, runChallenge, capitalized) where
 
 import Data.Maybe (fromMaybe)
 import Text.Read (readMaybe)
+import qualified Data.Char as Char
 
 inputChallenge :: String -> IO String
 inputChallenge name = readFile $ "inputs/" ++ name
 
 readLinesAsInt :: String -> Maybe [Int]
 readLinesAsInt = mapM readMaybe . lines
+
+capitalized :: String -> String
+capitalized = unwords . map capitalize . words
+  where
+    capitalize [] = []
+    capitalize (x:xs) = Char.toUpper x : xs
 
 runChallenge :: Show b => String -> (String -> Maybe a) -> String -> (a -> b) -> IO ()
 runChallenge name parser part challenge = do
