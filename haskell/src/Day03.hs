@@ -31,6 +31,15 @@ part1 xs = gamma summary * epsilon summary
     sumBits = foldl addBit $ Bits 0 0
     toDec = foldl (\acc x -> acc * 2 + x) 0
 
+part2 :: [String] -> Int
+part2 xs = oxygen * co2
+  where
+    oxygen = iter (criteria mostCommon) xs
+    co2 = iter (criteria leastCommon) xs
+    criteria f s = (== f (summary s))
+    summary = sumBits . categorise
+    sumBits = foldl addBit $ Bits 0 0
+
 iter :: (String -> Int -> Bool) -> [String] -> Int
 iter f xs = iter' f initCol withParsed
   where
@@ -47,12 +56,3 @@ iter f xs = iter' f initCol withParsed
     process xs = iter' f (firstCol xs) $ dropCol xs
     firstCol xs = fmap (head . tail . fst) xs
     dropCol xs = fmap (first tail) xs
-
-part2 :: [String] -> Int
-part2 xs = oxygen * co2
-  where
-    oxygen = iter (criteria mostCommon) xs
-    co2 = iter (criteria leastCommon) xs
-    criteria f s = (== f (summary s))
-    summary = sumBits . categorise
-    sumBits = foldl addBit $ Bits 0 0
