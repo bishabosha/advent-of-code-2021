@@ -1,50 +1,46 @@
 module Day02 (parseCommands, part1, part2) where
 
-import Advent (capitalized)
+import Advent (capitalize)
+import Control.Applicative (liftA2)
 import Control.Monad (sequence)
-import Text.Read (readEither, readMaybe)
+import Text.Read (readEither, readMaybe, readPrec)
 
 data Command = Forward | Down | Up
-  deriving (Show, Eq, Enum, Read)
+  deriving (Read)
+
+data Move = Move {command :: Command, amount :: Int}
 
 data Position = Position {depth :: Int, horizontal :: Int}
-  deriving (Show, Eq)
 
 data WithAim = WithAim {pos :: Position, aim :: Int}
-  deriving (Show, Eq)
 
-parseCommands :: [String] -> Maybe [(Command, Int)]
-parseCommands = mapM parsed
-  where
-    parsed = parse . words
-    parse [c, i] = do
-      c' <- readMaybe (capitalized c)
-      i' <- readMaybe i
-      return (c', i')
-    parse _ = Nothing
+instance Read Move where
+  readPrec = do
+    c <- readPrec
+    Move c <$> readPrec
 
-nextPosition :: Position -> Command -> Int -> Position
-nextPosition (Position d h) Forward i = Position d (h + i)
-nextPosition (Position d h) Down i = Position (d + i) h
-nextPosition (Position d h) Up i = Position (d - i) h
+parseCommands :: [String] -> Maybe [Move]
+parseCommands = traverse $ readMaybe . capitalize
 
-nextWithAim :: WithAim -> Command -> Int -> WithAim
-nextWithAim (WithAim (Position d h) a) Forward i = WithAim (Position (d + a * i) (h + i)) a
-nextWithAim (WithAim p a) Down i = WithAim p (a + i)
-nextWithAim (WithAim p a) Up i = WithAim p (a - i)
+nextPosition :: Position -> Move -> Position
+nextPosition (Position d h) (Move Forward i) = Position d (h + i)
+nextPosition (Position d h) (Move Down i) = Position (d + i) h
+nextPosition (Position d h) (Move Up i) = Position (d - i) h
 
-run :: (p -> c -> i -> p) -> p -> [(c, i)] -> p
-run f = foldl (\p (c, i) -> f p c i)
+nextWithAim :: WithAim -> Move -> WithAim
+nextWithAim (WithAim (Position d h) a) (Move Forward i) = WithAim (Position (d + a * i) (h + i)) a
+nextWithAim (WithAim p a) (Move Down i) = WithAim p (a + i)
+nextWithAim (WithAim p a) (Move Up i) = WithAim p (a - i)
 
 prodPos :: Position -> Int
 prodPos (Position d h) = d * h
 
-part1 :: [(Command, Int)] -> Int
-part1 = prodPos . run nextPosition p'
+part1 :: [Move] -> Int
+part1 = prodPos . foldl nextPosition p'
   where
     p' = Position 0 0
 
-part2 :: [(Command, Int)] -> Int
-part2 = (prodPos . pos) . run nextWithAim wa'
+part2 :: [Move] -> Int
+part2 = prodPos . pos . foldl nextWithAim wa'
   where
     wa' = WithAim (Position 0 0) 0
