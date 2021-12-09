@@ -1,33 +1,63 @@
 package advent.challenge
 
 import advent.io.IO
-import advent.io.errors.IOE
+import advent.io.errors.IOError
 import advent.files.readFile
 import advent.console.printLine
+
+import scala.util.control.NonLocalReturns.*
+
+import scala.reflect.Typeable
 
 import java.io.IOException
 import java.nio.file.InvalidPathException
 
-def runChallenge[A, B](day: String, parser: String => Option[A])(part: String, challenge: A => B) =
+trait Show[-T]:
+  extension (t: T) def show: String
 
-  def fullName = s"$day-$part"
+object Show:
+  def apply[A: Show] = summon[Show[A]]
 
-  def handleResult[E](result: Either[E, B]) =
-    result match
-      case Left(err) => printLine(s"[error] $fullName failed: ${err.toString}")
-      case Right(res) => printLine(s"$fullName: $res")
+  given Show[Exception] = _.toString
+  given Show[Int] = _.toString
 
-  def parse(input: String) = parser(input).toRight(IllegalArgumentException(s"Could not parse input for $fullName"))
+end Show
 
-  def result =
+def readLinesAsInt(str: String): Either[NumberFormatException, List[Int]] =
+  tryEither(str.split("\n").toList.map(_.toInt))
+
+def tryEither[E <: Throwable: Typeable, A](f: => A): Either[E, A] =
+  try Right(f) catch { case err: E => Left(err) }
+
+class ParseError(msg: String) extends Exception(msg)
+
+val runChallenge =
+  [A, E] => (day: String, parse: String => Either[E, A]) =>
+  [B] => (part: String, challenge: A => B) =>
+  (sb: Show[B], se: Show[E]) ?=>
+
+    val fullName = s"$day-$part"
+
+    def printError[E](using Show[E])(err: E) = printLine(s"[error] $fullName failed: ${err.show}")
+    def success(result: B) = printLine(s"$fullName: ${result.show}")
+
+    def doParse(input: String): IOError[ParseError, A] =
+      IOError
+        .fromEither(parse(input))
+        .mapError(err => ParseError(s"Could not parse input due to ${err.show}"))
+
+    def result =
+      for
+        input <- readFile(s"inputs/$day")
+        parsed <- doParse(input)
+      yield
+        challenge(parsed)
+
     for
-      input <- readFile(s"inputs/$day")
-      parsed <- IOE.fromEither(parse(input))
+      res <- result.asIO
+      _   <- res.fold(printError, success)
     yield
-      challenge(parsed)
+      ()
 
-  for
-    res <- result.asIO
-    _ <- handleResult(res)
-  yield
-    ()
+end runChallenge
+

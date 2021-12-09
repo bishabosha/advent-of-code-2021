@@ -1,7 +1,7 @@
 package advent.files
 
 import advent.io.IO
-import advent.io.errors.IOE
+import advent.io.errors.IOError
 
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -10,16 +10,16 @@ import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
 
-def readFile(file: String): IOE[IOException | InvalidPathException, String] =
+def readFile(file: String): IOError[IOException | InvalidPathException, String] =
 
-  def readBytes(path: Path): IOE[IOException, Array[Byte]] =
-    IOE(IO.effect(Files.readAllBytes(path)).refineError[IOException])
+  def readBytes(path: Path): IOError[IOException, Array[Byte]] =
+    IOError.effect(Files.readAllBytes(path))
 
-  def getPath(file: String): IOE[InvalidPathException, Path] =
-    IOE(IO.effect(Paths.get(file)).refineError[InvalidPathException])
+  def getPath(file: String): IOError[InvalidPathException, Path] =
+    IOError.effect(Paths.get(file))
 
   for
     path <- getPath(file)
     bytes <- readBytes(path)
   yield
-   new String(bytes, StandardCharsets.UTF_8)
+    String(bytes, StandardCharsets.UTF_8)

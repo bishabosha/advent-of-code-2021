@@ -1,10 +1,10 @@
+package day01
+
 import advent.*
 import advent.io.IO
 
-@main def day01 =
-  for
-    x <- IO.Pure(23)
-    y <- IO.Pure(42)
-  yield
-    (x, y)
-  // println(IO.unsafeRunSync(res))
+def challenge(n: Int)(depths: List[Int]): Int =
+  depths.zip(depths.drop(n)).count(_ < _)
+
+val part1 = challenge(1)
+val part2 = challenge(3)
