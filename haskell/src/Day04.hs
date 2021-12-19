@@ -74,11 +74,11 @@ runGame' :: ActiveGame -> Maybe Int
 runGame' (ActiveGame (n : ns) [g]) =
   let g' = updateGame n g
    in if scores g'
-      then Just $ n * sum (Map.keys $ indexed g')
-      else runGame' (ActiveGame ns [g'])
+        then Just $ n * sum (Map.keys $ indexed g')
+        else runGame' (ActiveGame ns [g'])
 runGame' (ActiveGame (n : ns) gs) =
   let gs' = map (updateGame n) gs
-  in runGame' (ActiveGame ns (filter (not . scores) gs'))
+   in runGame' (ActiveGame ns (filter (not . scores) gs'))
 runGame' (ActiveGame [] gs) = Nothing -- no more numbers to draw
 
 initialGame :: BingoGame -> ActiveGame
