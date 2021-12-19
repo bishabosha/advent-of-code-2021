@@ -22,7 +22,7 @@ maintainer:         bishbashboshjt@gmail.com
 extra-source-files: CHANGELOG.md
 
 library
-    exposed-modules:  Advent, Day01, Day02, Day03, Day04, Day05
+    exposed-modules:  Advent, Day01, Day02, Day03, Day04, Day05, Day06
 
     -- Modules included in this library but not exported.
     -- other-modules:

@@ -1,10 +1,10 @@
 module Day05 (parseLines, part1, part2) where
 
-import Data.Text (pack, splitOn, unpack)
-import Control.Applicative ( Applicative(liftA2), Alternative (empty) )
-import Text.Read (readMaybe)
+import Control.Applicative (Applicative (liftA2))
 import Data.Map (Map)
-import qualified Data.Map as Map (delete, fromList, insertWith, keys, filter, lookup, update, (!), size, empty)
+import qualified Data.Map as Map (empty, filter, insertWith, size)
+import Data.Text (pack, splitOn, unpack)
+import Text.Read (readMaybe)
 
 data Point = Point Int Int deriving (Show, Eq, Ord)
 
